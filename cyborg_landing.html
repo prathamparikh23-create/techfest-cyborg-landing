@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TECHFEST 2025 — CYBORG EDITION</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cyan: #00f5ff;
+    --electric: #0af;
+    --magenta: #ff006e;
+    --dark: #010a0f;
+    --darker: #000608;
+    --panel: rgba(0,245,255,0.04);
+    --border: rgba(0,245,255,0.18);
+    --glow: 0 0 20px rgba(0,245,255,0.4), 0 0 60px rgba(0,245,255,0.15);
+    --glow-mg: 0 0 20px rgba(255,0,110,0.4), 0 0 60px rgba(255,0,110,0.15);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--darker);
+    color: #c8e8ee;
+    font-family: 'Exo 2', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* CUSTOM CURSOR */
+  #cursor {
+    position: fixed; width: 12px; height: 12px;
+    background: var(--cyan); border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%,-50%);
+    transition: transform 0.05s;
+    box-shadow: var(--glow);
+  }
+  #cursor-ring {
+    position: fixed; width: 36px; height: 36px;
+    border: 1px solid rgba(0,245,255,0.5); border-radius: 50%;
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%,-50%);
+    transition: transform 0.12s, width 0.2s, height 0.2s;
+  }
+
+  /* SCANLINES OVERLAY */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 9990; pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+  }
+
+  /* GRID BACKGROUND */
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(0,245,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,255,0.04) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: gridPulse 8s ease-in-out infinite;
+  }
+  @keyframes gridPulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  /* NOISE TEXTURE */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 48px;
+    background: rgba(1,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900; font-size: 18px;
+    color: var(--cyan);
+    letter-spacing: 4px;
+    text-shadow: var(--glow);
+  }
+  .nav-logo span { color: var(--magenta); }
+  .nav-links { display: flex; gap: 36px; list-style: none; }
+  .nav-links a {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px; letter-spacing: 2px;
+    color: rgba(200,232,238,0.6);
+    text-decoration: none; text-transform: uppercase;
+    transition: color 0.2s;
+    position: relative;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -4px; left: 0; right: 0;
+    height: 1px; background: var(--cyan);
+    transform: scaleX(0); transition: transform 0.2s;
+  }
+  .nav-links a:hover { color: var(--cyan); }
+  .nav-links a:hover::after { transform: scaleX(1); }
+  .nav-cta {
+    font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase;
+    padding: 10px 24px;
+    background: transparent;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    cursor: pointer;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    transition: all 0.2s;
+  }
+  .nav-cta:hover {
+    background: var(--cyan); color: var(--darker);
+    box-shadow: var(--glow);
+  }
+
+  /* SECTIONS */
+  section { position: relative; z-index: 2; }
+
+  /* ===== HERO ===== */
+  #hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+    overflow: hidden;
+  }
+
+  .hero-eye {
+    position: absolute; width: 600px; height: 600px;
+    left: 50%; top: 50%; transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .eye-ring {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 1px solid rgba(0,245,255,0.12);
+    animation: spin 20s linear infinite;
+  }
+  .eye-ring:nth-child(2) { inset: 40px; border-color: rgba(255,0,110,0.1); animation-duration: 14s; animation-direction: reverse; }
+  .eye-ring:nth-child(3) { inset: 100px; border-color: rgba(0,245,255,0.08); animation-duration: 30s; }
+  .eye-ring:nth-child(4) { inset: 170px; border-color: rgba(255,0,110,0.06); animation-duration: 22s; animation-direction: reverse; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .eye-dot {
+    position: absolute; width: 8px; height: 8px;
+    background: var(--cyan); border-radius: 50%;
+    top: 0; left: 50%; transform: translateX(-50%);
+    box-shadow: var(--glow);
+    animation: orbit 8s linear infinite;
+    transform-origin: 0 300px;
+  }
+  @keyframes orbit {
+    from { transform: rotate(0deg) translateY(-300px); }
+    to { transform: rotate(360deg) translateY(-300px); }
+  }
+
+  .hero-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; letter-spacing: 4px; color: var(--magenta);
+    text-transform: uppercase; margin-bottom: 20px;
+    animation: fadeUp 0.8s ease both;
+  }
+  .hero-badge::before { content: '[ '; }
+  .hero-badge::after { content: ' ]'; }
+
+  .hero-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(52px, 9vw, 110px);
+    font-weight: 900; line-height: 0.9;
+    color: #fff;
+    letter-spacing: -2px;
+    margin-bottom: 8px;
+    animation: fadeUp 0.8s ease 0.1s both;
+  }
+  .hero-title .line2 {
+    display: block;
+    -webkit-text-stroke: 1.5px var(--cyan);
+    color: transparent;
+    filter: drop-shadow(0 0 12px rgba(0,245,255,0.5));
+  }
+
+  .glitch {
+    position: relative;
+    display: inline-block;
+  }
+  .glitch::before, .glitch::after {
+    content: attr(data-text);
+    position: absolute; top: 0; left: 0; right: 0;
+    overflow: hidden;
+    font-family: inherit; font-size: inherit; font-weight: inherit;
+    color: inherit;
+  }
+  .glitch::before {
+    left: 2px; text-shadow: -2px 0 var(--magenta);
+    clip-path: polygon(0 30%, 100% 30%, 100% 55%, 0 55%);
+    animation: glitchA 4s infinite;
+    -webkit-text-stroke: 0; color: var(--magenta);
+  }
+  .glitch::after {
+    left: -2px; text-shadow: 2px 0 var(--cyan);
+    clip-path: polygon(0 65%, 100% 65%, 100% 80%, 0 80%);
+    animation: glitchB 4s infinite;
+    -webkit-text-stroke: 0; color: var(--cyan);
+  }
+  @keyframes glitchA {
+    0%, 90%, 100% { transform: none; opacity: 0; }
+    91% { transform: translate(-3px, 1px) skewX(-10deg); opacity: 1; }
+    93% { transform: translate(3px, -1px); opacity: 0.8; }
+    95% { transform: none; opacity: 0; }
+  }
+  @keyframes glitchB {
+    0%, 88%, 100% { transform: none; opacity: 0; }
+    89% { transform: translate(3px, 2px) skewX(5deg); opacity: 1; }
+    92% { transform: translate(-2px, -1px); opacity: 0.8; }
+    94% { transform: none; opacity: 0; }
+  }
+
+  .hero-sub {
+    font-family: 'Exo 2', sans-serif;
+    font-size: clamp(14px, 2vw, 18px);
+    font-weight: 300; letter-spacing: 2px;
+    color: rgba(200,232,238,0.55);
+    max-width: 560px;
+    line-height: 1.7;
+    margin: 24px auto 48px;
+    animation: fadeUp 0.8s ease 0.2s both;
+  }
+
+  .hero-buttons {
+    display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+    animation: fadeUp 0.8s ease 0.3s both;
+  }
+  .btn-primary {
+    font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase;
+    padding: 16px 40px;
+    background: var(--cyan); color: var(--darker);
+    border: none; cursor: pointer;
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+    transition: all 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .btn-primary::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.4s;
+  }
+  .btn-primary:hover::before { transform: translateX(100%); }
+  .btn-primary:hover { box-shadow: var(--glow); transform: translateY(-2px); }
+
+  .btn-secondary {
+    font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700;
+    letter-spacing: 3px; text-transform: uppercase;
+    padding: 16px 40px;
+    background: transparent; color: var(--cyan);
+    border: 1px solid var(--border); cursor: pointer;
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover {
+    border-color: var(--cyan);
+    box-shadow: var(--glow);
+    transform: translateY(-2px);
+  }
+
+  .hero-stats {
+    display: flex; gap: 48px; margin-top: 72px; flex-wrap: wrap; justify-content: center;
+    animation: fadeUp 0.8s ease 0.4s both;
+  }
+  .stat {
+    text-align: center; position: relative;
+  }
+  .stat-num {
+    font-family: 'Orbitron', monospace; font-size: 36px; font-weight: 900;
+    color: var(--cyan); display: block;
+    text-shadow: var(--glow);
+  }
+  .stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px; letter-spacing: 2px;
+    color: rgba(200,232,238,0.4); text-transform: uppercase;
+    display: block; margin-top: 4px;
+  }
+  .stat + .stat::before {
+    content: '';
+    position: absolute; left: -24px; top: 50%;
+    transform: translateY(-50%);
+    width: 1px; height: 40px;
+    background: var(--border);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== ABOUT ===== */
+  #about {
+    padding: 120px 48px;
+    max-width: 1200px; margin: 0 auto;
+  }
+  .section-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; letter-spacing: 4px; color: var(--magenta);
+    text-transform: uppercase; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-label::before {
+    content: '//'; color: rgba(200,232,238,0.3);
+  }
+  .section-title {
+    font-family: 'Orbitron', monospace; font-size: clamp(28px, 4vw, 48px);
+    font-weight: 900; color: #fff; line-height: 1.1;
+    margin-bottom: 48px;
+  }
+  .section-title em {
+    font-style: normal;
+    -webkit-text-stroke: 1px var(--cyan); color: transparent;
+  }
+
+  .about-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    border: 1px solid var(--border);
+    background: var(--border);
+    clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
+    overflow: hidden;
+  }
+  .about-cell {
+    background: var(--dark);
+    padding: 40px;
+    transition: background 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .about-cell:hover { background: rgba(0,245,255,0.04); }
+  .about-cell::before {
+    content: attr(data-num);
+    position: absolute; right: 20px; top: 16px;
+    font-family: 'Orbitron', monospace; font-size: 48px;
+    font-weight: 900; color: rgba(0,245,255,0.04);
+    line-height: 1;
+  }
+  .about-cell h3 {
+    font-family: 'Orbitron', monospace; font-size: 14px;
+    font-weight: 700; letter-spacing: 2px;
+    color: var(--cyan); margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .about-cell p {
+    font-size: 14px; line-height: 1.7;
+    color: rgba(200,232,238,0.6);
+  }
+
+  /* ===== EVENTS ===== */
+  #events {
+    padding: 120px 48px;
+    background: linear-gradient(180deg, transparent, rgba(0,245,255,0.02), transparent);
+  }
+  .events-inner { max-width: 1200px; margin: 0 auto; }
+
+  .events-track {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 48px;
+  }
+  .event-card {
+    background: var(--dark);
+    padding: 36px 32px;
+    position: relative; overflow: hidden;
+    transition: background 0.3s, transform 0.2s;
+    cursor: pointer;
+  }
+  .event-card:hover {
+    background: rgba(0,245,255,0.05);
+    transform: translateY(-4px);
+    z-index: 5;
+  }
+  .event-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: var(--cyan);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.3s;
+  }
+  .event-card:hover::after { transform: scaleX(1); }
+
+  .event-icon {
+    font-size: 28px; margin-bottom: 16px; display: block;
+    filter: drop-shadow(0 0 8px rgba(0,245,255,0.5));
+  }
+  .event-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px; letter-spacing: 3px;
+    color: var(--magenta); text-transform: uppercase;
+    margin-bottom: 10px; display: block;
+  }
+  .event-name {
+    font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 700;
+    color: #fff; margin-bottom: 12px;
+    line-height: 1.3;
+  }
+  .event-desc {
+    font-size: 13px; line-height: 1.6;
+    color: rgba(200,232,238,0.5);
+  }
+  .event-meta {
+    margin-top: 20px; padding-top: 16px;
+    border-top: 1px solid var(--border);
+    display: flex; gap: 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; color: rgba(200,232,238,0.35);
+  }
+  .event-meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* ===== STATS ===== */
+  #reach {
+    padding: 120px 48px;
+    max-width: 1200px; margin: 0 auto;
+    text-align: center;
+  }
+  .reach-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 64px;
+  }
+  .reach-cell {
+    background: var(--dark); padding: 48px 24px;
+    transition: background 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .reach-cell:hover { background: rgba(0,245,255,0.04); }
+  .reach-cell::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(0,245,255,0.06), transparent 70%);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .reach-cell:hover::before { opacity: 1; }
+  .reach-num {
+    font-family: 'Orbitron', monospace; font-size: 48px; font-weight: 900;
+    color: var(--cyan); display: block; line-height: 1;
+    text-shadow: var(--glow);
+  }
+  .reach-plus { color: var(--magenta); }
+  .reach-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; letter-spacing: 2px;
+    color: rgba(200,232,238,0.4); text-transform: uppercase;
+    margin-top: 10px; display: block; line-height: 1.4;
+  }
+
+  /* ===== REGISTER CTA ===== */
+  #register {
+    padding: 160px 48px;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .cta-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0,245,255,0.06), transparent);
+  }
+  .cta-line {
+    position: absolute; left: 0; right: 0;
+    height: 1px; background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  }
+  .cta-line.top { top: 0; }
+  .cta-line.bottom { bottom: 0; }
+  .cta-content { position: relative; z-index: 2; }
+  .cta-eyebrow {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px; letter-spacing: 5px;
+    color: var(--magenta); text-transform: uppercase;
+    margin-bottom: 24px;
+    animation: blink 2s step-end infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .cta-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(36px, 6vw, 80px); font-weight: 900;
+    color: #fff; line-height: 1; margin-bottom: 32px;
+  }
+  .cta-title span {
+    display: block;
+    -webkit-text-stroke: 1.5px var(--cyan); color: transparent;
+    text-shadow: 0 0 40px rgba(0,245,255,0.3);
+  }
+  .cta-sub {
+    font-size: 16px; color: rgba(200,232,238,0.5);
+    max-width: 480px; margin: 0 auto 48px;
+    line-height: 1.7;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px;
+    position: relative; z-index: 2;
+  }
+  .footer-logo {
+    font-family: 'Orbitron', monospace; font-weight: 900; font-size: 14px;
+    color: var(--cyan); letter-spacing: 4px;
+  }
+  .footer-copy {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; color: rgba(200,232,238,0.3); letter-spacing: 1px;
+  }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; letter-spacing: 2px;
+    color: rgba(200,232,238,0.4); text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--cyan); }
+
+  /* CORNER DECORATIONS */
+  .corner {
+    position: absolute; width: 20px; height: 20px;
+    border-color: var(--cyan); border-style: solid;
+    opacity: 0.6;
+  }
+  .corner.tl { top: 8px; left: 8px; border-width: 1px 0 0 1px; }
+  .corner.tr { top: 8px; right: 8px; border-width: 1px 1px 0 0; }
+  .corner.bl { bottom: 8px; left: 8px; border-width: 0 0 1px 1px; }
+  .corner.br { bottom: 8px; right: 8px; border-width: 0 1px 1px 0; }
+
+  /* SCROLL INDICATOR */
+  .scroll-ind {
+    position: absolute; bottom: 40px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    font-family: 'Share Tech Mono', monospace; font-size: 10px;
+    letter-spacing: 3px; color: rgba(200,232,238,0.3); text-transform: uppercase;
+    animation: fadeUp 1s ease 1s both;
+  }
+  .scroll-line {
+    width: 1px; height: 48px;
+    background: linear-gradient(to bottom, var(--cyan), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollPulse {
+    0%, 100% { transform: scaleY(0.4); opacity: 0.4; transform-origin: top; }
+    50% { transform: scaleY(1); opacity: 1; }
+  }
+
+  /* HUD CORNER */
+  .hud {
+    position: fixed; bottom: 24px; right: 24px; z-index: 100;
+    font-family: 'Share Tech Mono', monospace; font-size: 10px;
+    color: rgba(0,245,255,0.3); letter-spacing: 1px;
+    text-align: right; line-height: 1.8;
+    pointer-events: none;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    .nav-links { display: none; }
+    #about, #events, #reach, #register { padding: 80px 20px; }
+    .about-grid { grid-template-columns: 1fr; }
+    .reach-grid { grid-template-columns: 1fr 1fr; }
+    footer { padding: 24px 20px; flex-direction: column; align-items: flex-start; }
+    .stat + .stat::before { display: none; }
+    .hero-stats { gap: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- HUD OVERLAY -->
+<div class="hud">
+  <div id="hud-time">--:--:--</div>
+  <div>SYS::ONLINE</div>
+  <div>IIT.BOMBAY/TF30</div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">TECH<span>FEST</span></div>
+  <ul class="nav-links">
+    <li><a href="#about">Protocol</a></li>
+    <li><a href="#events">Events</a></li>
+    <li><a href="#reach">Network</a></li>
+    <li><a href="#register">Register</a></li>
+  </ul>
+  <button class="nav-cta" onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})">Initialize</button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-eye" aria-hidden="true">
+    <div class="eye-ring"></div>
+    <div class="eye-ring"></div>
+    <div class="eye-ring"></div>
+    <div class="eye-ring"></div>
+    <div class="eye-dot"></div>
+  </div>
+
+  <div class="hero-badge">30th Edition · IIT Bombay · December 2025</div>
+
+  <h1 class="hero-title">
+    <span class="glitch" data-text="TECHFEST">TECHFEST</span>
+    <span class="line2">2025</span>
+  </h1>
+
+  <p class="hero-sub">
+    Asia's largest science & technology festival. Where human ambition
+    merges with machine precision. 300+ events. 3 days. One infinite loop.
+  </p>
+
+  <div class="hero-buttons">
+    <button class="btn-primary" onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})">Register Now</button>
+    <button class="btn-secondary" onclick="document.getElementById('events').scrollIntoView({behavior:'smooth'})">Explore Events</button>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat">
+      <span class="stat-num" data-target="180000">0</span>
+      <span class="stat-label">Footfall</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" data-target="300">0</span>
+      <span class="stat-label">Events</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" data-target="22000">0</span>
+      <span class="stat-label">Ambassadors</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" data-target="3000">0</span>
+      <span class="stat-label">Universities</span>
+    </div>
+  </div>
+
+  <div class="scroll-ind">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-label">About</div>
+  <h2 class="section-title">Technology meets<br><em>Human Evolution</em></h2>
+
+  <div class="about-grid">
+    <div class="about-cell" data-num="01">
+      <div class="corner tl"></div>
+      <h3>The Mission</h3>
+      <p>Techfest is not merely a festival — it is a convergence. Where brilliant minds from across the globe gather to push the boundary between what is human and what is engineered. 30 years of redefining possible.</p>
+    </div>
+    <div class="about-cell" data-num="02">
+      <h3>The Scale</h3>
+      <p>1,80,000 footfall. 300+ events. 3 days. Spanning robotics, artificial intelligence, space tech, and beyond — Techfest operates at a scale matched by no other student-run festival in Asia.</p>
+    </div>
+    <div class="about-cell" data-num="03">
+      <h3>The Network</h3>
+      <p>22,000+ Campus Ambassadors across 2,500+ Indian universities and 500+ international institutions form the backbone of the world's most ambitious student tech movement.</p>
+    </div>
+    <div class="about-cell" data-num="04">
+      <div class="corner br"></div>
+      <h3>The Legacy</h3>
+      <p>Three decades of shaping India's technological consciousness. Past editions have hosted Nobel laureates, astronauts, CEOs, and the world's most pioneering minds. Edition 30 rewrites the blueprint.</p>
+    </div>
+  </div>
+</section>
+
+<!-- EVENTS -->
+<section id="events">
+  <div class="events-inner">
+    <div class="section-label">Directives</div>
+    <h2 class="section-title">Event <em>Modules</em></h2>
+
+    <div class="events-track">
+      <div class="event-card">
+        <span class="event-icon">⚙️</span>
+        <span class="event-tag">Combat</span>
+        <div class="event-name">International Robowars</div>
+        <p class="event-desc">The most intense machine combat competition in Asia. Engineer your weapon, program your predator, enter the arena.</p>
+        <div class="event-meta">
+          <span>🕹 Live Battle</span>
+          <span>🌍 International</span>
+        </div>
+      </div>
+      <div class="event-card">
+        <span class="event-icon">🧠</span>
+        <span class="event-tag">Intelligence</span>
+        <div class="event-name">AI & Machine Learning</div>
+        <p class="event-desc">Competitions and workshops at the frontier of intelligence — from generative models to autonomous systems.</p>
+        <div class="event-meta">
+          <span>💻 Hackathon</span>
+          <span>🏆 ₹50K+ Prize</span>
+        </div>
+      </div>
+      <div class="event-card">
+        <span class="event-icon">🚀</span>
+        <span class="event-tag">Space Tech</span>
+        <div class="event-name">Astronomy & Rocketry</div>
+        <p class="event-desc">Build, launch, and prove your mastery of aerodynamics and orbital mechanics in competitive rocketry challenges.</p>
+        <div class="event-meta">
+          <span>🔭 ISRO Collab</span>
+          <span>🛸 Live Launch</span>
+        </div>
+      </div>
+      <div class="event-card">
+        <span class="event-icon">🎵</span>
+        <span class="event-tag">Culture</span>
+        <div class="event-name">Technoholix</div>
+        <p class="event-desc">When science meets art — international EDM artists perform under a sky lit by laser grids and projection mapping.</p>
+        <div class="event-meta">
+          <span>🎧 EDM Night</span>
+          <span>🌐 Live Stream</span>
+        </div>
+      </div>
+      <div class="event-card">
+        <span class="event-icon">🏛</span>
+        <span class="event-tag">Diplomacy</span>
+        <div class="event-name">TWMUN</div>
+        <p class="event-desc">Model United Nations at the intersection of global policy and emerging technology. Shape the governance of tomorrow.</p>
+        <div class="event-meta">
+          <span>🗳 Debate</span>
+          <span>🌏 Global</span>
+        </div>
+      </div>
+      <div class="event-card">
+        <span class="event-icon">🔬</span>
+        <span class="event-tag">Discovery</span>
+        <div class="event-name">Tech Summits</div>
+        <p class="event-desc">Industry leaders, researchers, and innovators converge to discuss the technologies defining the next decade of human progress.</p>
+        <div class="event-meta">
+          <span>🎤 Keynotes</span>
+          <span>📡 Workshops</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REACH STATS -->
+<section id="reach">
+  <div class="section-label">Network Stats</div>
+  <h2 class="section-title">Global <em>Reach</em></h2>
+
+  <div class="reach-grid">
+    <div class="reach-cell">
+      <span class="reach-num">1.8<span class="reach-plus">L+</span></span>
+      <span class="reach-label">Annual Footfall</span>
+    </div>
+    <div class="reach-cell">
+      <span class="reach-num">22<span class="reach-plus">K+</span></span>
+      <span class="reach-label">Campus Ambassadors</span>
+    </div>
+    <div class="reach-cell">
+      <span class="reach-num">2500<span class="reach-plus">+</span></span>
+      <span class="reach-label">Indian Universities</span>
+    </div>
+    <div class="reach-cell">
+      <span class="reach-num">500<span class="reach-plus">+</span></span>
+      <span class="reach-label">International Institutions</span>
+    </div>
+  </div>
+</section>
+
+<!-- REGISTER CTA -->
+<section id="register">
+  <div class="cta-bg"></div>
+  <div class="cta-line top"></div>
+  <div class="cta-line bottom"></div>
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+  <div class="cta-content">
+    <div class="cta-eyebrow">▶ Initializing Registration Protocol</div>
+    <h2 class="cta-title">
+      Are You<span>Ready?</span>
+    </h2>
+    <p class="cta-sub">December 2025. IIT Bombay. The 30th edition begins. Your upgrade starts now.</p>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+      <button class="btn-primary" style="font-size:13px; padding:18px 56px;">Register — Techfest 2025</button>
+      <button class="btn-secondary" style="font-size:13px; padding:18px 48px;">techfest.in →</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">TECHFEST 2025</div>
+  <div class="footer-copy">© IIT Bombay · Asia's Largest Science & Technology Festival · 30th Edition</div>
+  <div class="footer-links">
+    <a href="#">techfest.in</a>
+    <a href="#">Instagram</a>
+    <a href="#">LinkedIn</a>
+  </div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+    setTimeout(() => {
+      ring.style.left = e.clientX + 'px';
+      ring.style.top = e.clientY + 'px';
+    }, 80);
+  });
+  document.querySelectorAll('button, a').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.transform = 'translate(-50%,-50%) scale(1.8)';
+      ring.style.width = '56px'; ring.style.height = '56px';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.transform = 'translate(-50%,-50%) scale(1)';
+      ring.style.width = '36px'; ring.style.height = '36px';
+    });
+  });
+
+  // HUD Clock
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('hud-time').textContent =
+      now.toLocaleTimeString('en-IN', {hour12: false});
+  }
+  setInterval(updateClock, 1000); updateClock();
+
+  // Counter animation
+  function animateCounter(el) {
+    const target = parseInt(el.dataset.target);
+    const duration = 2000;
+    const start = performance.now();
+    const format = n => n >= 1000 ? (n/1000).toFixed(n >= 10000 ? 0 : 1) + 'K+' : n + '+';
+    function step(now) {
+      const elapsed = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - elapsed, 3);
+      const val = Math.floor(eased * target);
+      el.textContent = format(val);
+      if (elapsed < 1) requestAnimationFrame(step);
+      else el.textContent = format(target);
+    }
+    requestAnimationFrame(step);
+  }
+
+  // Intersection Observer for counters + fade-ins
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const counters = entry.target.querySelectorAll('[data-target]');
+        counters.forEach(animateCounter);
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+
+  document.querySelectorAll('.about-cell, .event-card, .reach-cell').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.5s ease, transform 0.5s ease, background 0.3s';
+    observer.observe(el);
+  });
+
+  document.querySelectorAll('#hero .hero-stats').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
